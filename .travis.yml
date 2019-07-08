@@ -1,0 +1,21 @@
+    
+language: python
+python:
+  - "3.6"
+  
+services:
+  - docker
+
+before_install:
+  - sudo apt-get update
+  - sudo apt-get install -y python3-pip
+  - sudo pip3 install -U pip
+
+install:
+  - pip3 install -U PySocks
+  - pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
+  - python3 fetch_pubs.py
+  - docker build -t ipeirotis/scholar_update .
+  
+script:
+  - python3 binder/test_notebooks.py notes
