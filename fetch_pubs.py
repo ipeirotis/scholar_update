@@ -1,7 +1,5 @@
 import scholarly
-import pandas as pd
 import json
-from datetime import datetime
 import tqdm
 
 # Set up scholarly to use the Tor proxy
