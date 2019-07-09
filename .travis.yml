@@ -16,6 +16,9 @@ install:
   - pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
   - python3 fetch_pubs.py
   - docker build -t ipeirotis/scholar_update .
-  
-script:
-  - python3 binder/test_notebooks.py notes
+
+deploy:
+  provider: script
+  script: bash docker_push
+  on:
+    branch: master
