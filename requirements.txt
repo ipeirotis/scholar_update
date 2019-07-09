@@ -1,0 +1,9 @@
+# To upload the datasets into Google Cloud storage
+google-cloud-storage 
+google-auth-oauthlib
+
+# Support proxies for tor
+PySocks 
+
+# Just to have a counter
+tqdm
