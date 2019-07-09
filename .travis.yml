@@ -16,9 +16,5 @@ install:
   - pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
   - python3 fetch_pubs.py
   - docker build -t ipeirotis/scholar_update .
-
-deploy:
-  provider: script
-  script: bash docker_push
-  on:
-    branch: master
+  - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+  - docker push ipeirotis/scholar_update
