@@ -13,9 +13,12 @@ addons:
     update: true  
 
 install:
-  - pip3 install -U PySocks tqdm
+  - pip3 install -r requirements.txt
   - pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
   - python3 fetch_pubs.py
-  - docker build -t ipeirotis/scholar_update .
+  
+
+script: 
   - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
+  - docker build -t ipeirotis/scholar_update .
   - docker push ipeirotis/scholar_update
