@@ -1,22 +1,20 @@
-    
 language: python
 python:
-  - "3.6"
-  
+- '3.6'
 services:
-  - docker
-
+- docker
 before_install:
-  - sudo apt-get update
-  - sudo apt-get install -y python3-pip tor
-  - sudo pip3 install -U pip
-
+- openssl aes-256-cbc -K $encrypted_122ea59d67a5_key -iv $encrypted_122ea59d67a5_iv
+  -in google-credentials-scholarAPI.json.enc -out google-credentials-scholarAPI.json
+  -d
+- sudo apt-get update
+- sudo apt-get install -y python3-pip tor
+- sudo pip3 install -U pip
 install:
-  - pip3 install -U PySocks tqdm
-  - pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
-  - python3 fetch_pubs.py
-  - docker build -t ipeirotis/scholar_update .
-
+- pip3 install -U PySocks tqdm
+- pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
+- python3 fetch_pubs.py
+- docker build -t ipeirotis/scholar_update .
 deploy:
   provider: script
   script: bash docker_push
