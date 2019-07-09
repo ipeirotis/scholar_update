@@ -12,7 +12,7 @@ before_install:
   - sudo pip3 install -U pip
 
 install:
-  - pip3 install -U PySocks
+  - pip3 install -U PySocks tqdm
   - pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
   - python3 fetch_pubs.py
   - docker build -t ipeirotis/scholar_update .
