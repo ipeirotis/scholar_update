@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ipeirotis/scholar_update.svg?branch=master)](https://travis-ci.org/ipeirotis/scholar_update)
+
 # Create a JSON file with my Google Scholar data
 
 A small script that scrapes Google Scholar using the [Python scholarly library](https://github.com/OrganicIrradiation/scholarly)
