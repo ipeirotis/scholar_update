@@ -2,6 +2,10 @@
 google-cloud-storage 
 google-auth-oauthlib
 
+# To restart the GCloud instance
+google-api-python-client
+oauth2client
+
 # Support proxies for tor
 PySocks 
 
