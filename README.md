@@ -12,7 +12,7 @@ The Travis script then does the following:
 * The Dockerfile is stored on the [hub.docker.com registry](https://cloud.docker.com/u/ipeirotis/repository/docker/ipeirotis/scholar_update). 
 * The web server is running as an f1-micro (free) running on Google Cloud, and pulls the latest Docker image on start, and runs the docker container on the VM automatically.
 * The Travis script runs daily to update the JSON files. We add DOCKER_USERNAME and DOCKER_PASSWORD as environmental variables setup on Travis. 
-* The Travis script also copies the two JSON files on a Google Bucket, [ipeirotis.json](https://storage.googleapis.com/publications_scholar/ipeirotis.json) and [ipeirotis_pubs.json](hthttps://storage.googleapis.com/publications_scholar/ipeirotis_pubs.json). To enable the upload:
+* The Travis script also copies the two JSON files on a Google Bucket, [ipeirotis.json](https://storage.googleapis.com/publications_scholar/ipeirotis.json) and [ipeirotis_pubs.json](https://storage.googleapis.com/publications_scholar/ipeirotis_pubs.json). To enable the upload:
 
   * We follow the [Google instructions](https://cloud.google.com/storage/docs/reference/libraries) to fetch the secrets json file
   * We encrypt the secrets json file using the [Travis instructions](https://docs.travis-ci.com/user/encrypting-files/)
