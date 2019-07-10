@@ -12,6 +12,7 @@ The Travis script then does the following:
 * The Dockerfile is stored on the [hub.docker.com registry](https://cloud.docker.com/u/ipeirotis/repository/docker/ipeirotis/scholar_update). 
 * The web server is running as an f1-micro (free) running on Google Cloud, and pulls the latest Docker image on start, and runs the docker container on the VM automatically.
 * The Travis script runs daily to update the JSON files. We add DOCKER_USERNAME and DOCKER_PASSWORD as environmental variables setup on Travis. 
+* Once the script completes, it also resets the VM, so that the VM can fetch the latest docker image with the latest JSON files.
 * The Travis script also copies the two JSON files on a Google Bucket, [ipeirotis.json](https://storage.googleapis.com/publications_scholar/ipeirotis.json) and [ipeirotis_pubs.json](https://storage.googleapis.com/publications_scholar/ipeirotis_pubs.json). To enable the upload:
 
   * We follow the [Google instructions](https://cloud.google.com/storage/docs/reference/libraries) to fetch the secrets json file
@@ -20,5 +21,3 @@ The Travis script then does the following:
   * The service account needs to be a "Storage Object Admin" (and not "Project Owner" as outlined in the documentation), and the bucket needs to have object level permissions, and not "bucket policy only". The bucket needs to be public.
 
 
-TODO: 
-* As part of the deployment, we should reboot the Google Cloud machine that runs the docker image, to get the latest version of the docker image
