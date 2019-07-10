@@ -25,3 +25,4 @@ script:
 - docker build -t ipeirotis/scholar_update .
 - docker push ipeirotis/scholar_update
 - python3 upload_to_google_storage.py
+- python3 restart_vm.py
