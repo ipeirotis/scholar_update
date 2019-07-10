@@ -1,8 +1,5 @@
 import os
 from google.cloud import storage
-from os import listdir
-from os.path import isfile, join, isdir
-
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
     """Uploads a file to the bucket."""
@@ -17,10 +14,8 @@ def upload_blob(bucket_name, source_file_name, destination_blob_name):
         source_file_name,
         destination_blob_name))
 
-path = 'data'
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'client-secret-ipeirotis-gc.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'google-credentials-scholarAPI.json'
 storage_client = storage.Client()
 
-datafiles = sorted([f for f in listdir(path) if isfile(join(path, f))])
-for d in datafiles:
-    upload_blob('datasets_nyu', join(path, d), d)
+upload_blob('publications_scholar', 'ipeirotis.json', 'ipeirotis.json')
+upload_blob('publications_scholar', 'ipeirotis_pubs.json', 'ipeirotis_pubs.json')

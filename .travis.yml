@@ -24,3 +24,4 @@ script:
 - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
 - docker build -t ipeirotis/scholar_update .
 - docker push ipeirotis/scholar_update
+- python3 upload_to_google_storage.py
