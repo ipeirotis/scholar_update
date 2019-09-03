@@ -18,4 +18,6 @@ os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'google-credentials-scholarAPI.js
 storage_client = storage.Client()
 
 upload_blob('publications_scholar', 'ipeirotis.json', 'ipeirotis.json')
+upload_blob('publications_scholar', 'provost.json', 'provost.json')
 upload_blob('publications_scholar', 'ipeirotis_pubs.json', 'ipeirotis_pubs.json')
+upload_blob('publications_scholar', 'provost_pubs.json', 'provost_pubs.json')

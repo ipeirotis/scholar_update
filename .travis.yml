@@ -18,7 +18,8 @@ addons:
 install:
 - pip3 install -r requirements.txt
 - pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
-- python3 fetch_pubs.py
+- python3 fetch_pubs_ipeirotis.py
+- python3 fetch_pubs_provost.py
 
 script: 
 - echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
