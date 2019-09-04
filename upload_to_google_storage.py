@@ -1,5 +1,10 @@
 import os
 from google.cloud import storage
+from datetime import datetime
+
+# We want to keep track of the last time we updated the file
+now = datetime.now()
+
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
     """Uploads a file to the bucket."""
