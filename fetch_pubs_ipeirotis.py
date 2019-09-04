@@ -8,11 +8,6 @@ now = datetime.now()
 timestamp = int(datetime.timestamp(now))
 date_str = now.strftime("%Y-%m-%d %H:%M:%S")
 
-# hack for travis: Only  execute on odd days
-if now.day%2==0:
-    quit()
-
-
 # Set up scholarly to use the Tor proxy
 proxies = {'http' : 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'}
 scholarly.scholarly.use_proxy(**proxies)
