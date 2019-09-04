@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ipeirotis/scholar_update.svg?branch=master)](https://travis-ci.org/ipeirotis/scholar_update)
+[![Build Status](https://travis-ci.com/ipeirotis/scholar_update.svg?branch=master)](https://travis-ci.org/ipeirotis/scholar_update)
 
 # Create a JSON file with my Google Scholar data
 
