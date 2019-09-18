@@ -1,4 +1,8 @@
 import os
+
+import os.path
+from os import path
+
 from google.cloud import storage
 from datetime import datetime
 
@@ -8,6 +12,9 @@ now = datetime.now()
 
 def upload_blob(bucket_name, source_file_name, destination_blob_name):
     """Uploads a file to the bucket."""
+    if not path.exists(source_file_name):
+        return
+    
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)

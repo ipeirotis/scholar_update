@@ -1,21 +1,29 @@
+import sys
 import scholarly
 import json
 import tqdm
 from datetime import datetime
+
+if len(sys.argv)==2:
+    author_name = sys.argv[1]
+else:
+    quit()
 
 # We want to keep track of the last time we updated the file
 now = datetime.now()
 timestamp = int(datetime.timestamp(now))
 date_str = now.strftime("%Y-%m-%d %H:%M:%S")
 
-
 # Set up scholarly to use the Tor proxy
 proxies = {'http' : 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'}
 scholarly.scholarly.use_proxy(**proxies)
 
-# Query for Ipeirotis and fill in the details
-search_query = scholarly.search_author('Foster Provost')
-author = next(search_query).fill()
+# Query for author and fill in the details
+try:
+    search_query = scholarly.search_author(author_name)
+    author = next(search_query).fill()
+except:
+    quit()
 
 # Convert Author object to a dictionary, to allow JSON serialization
 author_dict = dict(author.__dict__)
@@ -27,14 +35,17 @@ del author_dict['publications']
 del author_dict['coauthors']
 
 # Save the author profile in a JSON file
-with open("provost.json", "w") as f:
+with open(author_name + ".json", "w") as f:
      json.dump(author_dict, f)
         
 # Go through the publicationw now, and fill them in with their details
 # tqdm just to know where we are and how long it will take (often 15-20 mins for ~100 pubs)
 for pub in tqdm.tqdm(author.publications):
-    if not pub._filled:
-        pub.fill()
+    try:
+        if not pub._filled:
+            pub.fill()
+    except:
+        pass
         
 # Once we have the fully complete publications, we convert them to dictionaries to
 # be able to serialize them in JSON
@@ -58,5 +69,5 @@ for p in publications:
     p['last_updated'] = date_str
 
 # Save the publications in a JSON file
-with open("provost_pubs.json", "w") as f:
+with open(author_name + "_pubs.json", "w") as f:
     json.dump(publications, f)
