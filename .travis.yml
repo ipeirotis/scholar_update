@@ -18,12 +18,12 @@ addons:
 install:
 - pip3 install -r requirements.txt
 - pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
-- python3 fetch_pubs.py ipeirotis
-- python3 fetch_pubs.py provost
+- echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
 
 script: 
-- echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
-- docker build -t ipeirotis/scholar_update .
-- docker push ipeirotis/scholar_update
+- python3 fetch_pubs.py ipeirotis
+- python3 fetch_pubs.py provost
+# - docker build -t ipeirotis/scholar_update .
+# - docker push ipeirotis/scholar_update
 - python3 upload_to_google_storage.py
 - python3 restart_vm.py
