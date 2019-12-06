@@ -3,8 +3,8 @@ language: python
 python:
 - '3.6'
 
-services:
-- docker
+# services:
+# - docker
 
 before_install:
 - sudo apt-get install -y tor
@@ -20,6 +20,7 @@ install:
 - pip3 install -U git+https://github.com/OrganicIrradiation/scholarly.git
   # - python3 fetch_pubs.py ipeirotis
   # - python3 fetch_pubs.py provost
+
 
 script: 
 - python3 fetch_pubs.py ipeirotis
