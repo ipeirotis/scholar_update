@@ -36,9 +36,7 @@ jobs:
     - name: Decrypt Google credentials file
       run: ./decrypt_secret.sh
       env:
-        GPG_PASSWORD:  ${{ secrets.GPG_PASSWORD }} 
-    - name: Test printing your secret (Remove this step in production)
-      run: cat $HOME/google-credentials-scholarAPI.json        
+        GPG_PASSWORD:  ${{ secrets.GPG_PASSWORD }}    
     - name: Fetch latest statistics for Panos
       run: |
         python3 fetch_pubs.py ipeirotis
