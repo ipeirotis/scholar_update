@@ -1,5 +1,5 @@
 import sys
-import scholarly
+from scholarly import scholarly
 import json
 import tqdm
 from datetime import datetime
@@ -15,8 +15,8 @@ timestamp = int(datetime.timestamp(now))
 date_str = now.strftime("%Y-%m-%d %H:%M:%S")
 
 # Set up scholarly to use the Tor proxy
-proxies = {'http': 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'}
-scholarly.scholarly.use_proxy(**proxies)
+# proxies = {'http': 'socks5://127.0.0.1:9050', 'https': 'socks5://127.0.0.1:9050'}
+# scholarly.use_proxy(**proxies)
 
 # Query for author and fill in the details
 try:
