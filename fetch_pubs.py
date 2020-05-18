@@ -33,6 +33,7 @@ author_dict['last_updated'] = date_str
 # Remove the publications and co-author entries, which are not needed in the JSON
 del author_dict['publications']
 del author_dict['coauthors']
+del author_dict['nav']
 
 # Save the author profile in a JSON file
 with open(author_name + ".json", "w") as f:
