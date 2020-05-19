@@ -54,7 +54,9 @@ for pub in tqdm.tqdm(author.publications):
 # be able to serialize them in JSON
 publications = []
 for pub in author.publications:
-    publications.append(dict(pub.__dict__))
+    pub_dict = dict(pub.__dict__)
+    del pub_dict['nav']
+    publications.append(pub_dict)
 
 # Bookkeeping with publications, ensuring that everything is serializable
 for p in publications:
