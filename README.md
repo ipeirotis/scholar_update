@@ -1,7 +1,5 @@
 [![GitHub: Build Status](https://github.com/ipeirotis/scholar_update/workflows/Python%20application/badge.svg)](https://github.com/ipeirotis/scholar_update/actions?query=workflow%3A%22Python+application%22+branch%3Amaster)
 
-[![Travis: Build Status](https://travis-ci.com/ipeirotis/scholar_update.svg?branch=master)](https://travis-ci.org/ipeirotis/scholar_update)
-
 # Create a JSON file with my Google Scholar data
 
 A small script that scrapes Google Scholar using the [Python scholarly library](https://github.com/OrganicIrradiation/scholarly)
