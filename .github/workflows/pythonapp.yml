@@ -45,7 +45,7 @@ jobs:
         python3 fetch_pubs.py ipeirotis
     - name: Fetch latest statistics for Foster
       run: |
-        python3 fetch_pubs.py provost
+        python3 fetch_pubs.py "foster provost"
     - name: Upload to Google Storage Bucket
       run: |
         python3 upload_to_google_storage.py
