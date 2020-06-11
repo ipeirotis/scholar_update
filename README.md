@@ -6,7 +6,6 @@ A small script that scrapes Google Scholar using the [Python scholarly library](
 and creates a JSON file with my publications and their statistics.
 
 The GitHub Action script then does the following:
-* Installs Tor and PySocks, to allow scholarly to connect using Tor.
 * Runs the script and fetches the latest data from Google Scholar.
 * The script runs daily to update the JSON files.  
 * The then copies the two JSON files on a Google Bucket, [ipeirotis.json](https://storage.googleapis.com/publications_scholar/ipeirotis.json) and [ipeirotis_pubs.json](https://storage.googleapis.com/publications_scholar/ipeirotis_pubs.json). To enable the upload:
