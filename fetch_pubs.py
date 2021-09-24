@@ -17,7 +17,7 @@ date_str = now.strftime("%Y-%m-%d %H:%M:%S")
 # Query for author and fill in the details
 try:
     search_query = scholarly.search_author(author_name)
-    author = scholarly.fill(next(search_query))
+    author = scholarly.fill(next(search_query), sections=['basics'])
 except Exception as e:
     quit()
     
@@ -37,8 +37,8 @@ for pub in author["publications"]:
 author["last_updated_ts"] = timestamp
 author["last_updated"] = date_str
 # Remove the publications and co-author entries, which are not needed in the JSON
-del author["publications"]
-del author["coauthors"]
+# del author["publications"]
+# del author["coauthors"]
 del author["filled"]
 del author["container_type"]
 del author["source"]
