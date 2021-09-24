@@ -17,7 +17,7 @@ date_str = now.strftime("%Y-%m-%d %H:%M:%S")
 # Query for author and fill in the details
 try:
     search_query = scholarly.search_author(author_name)
-    author = scholarly.fill(next(search_query), , sections=['basics', 'publications'])
+    author = scholarly.fill(next(search_query), sections=['basics', 'publications'])
 except Exception as e:
     quit()
     
