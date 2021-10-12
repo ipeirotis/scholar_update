@@ -17,7 +17,7 @@ date_str = now.strftime("%Y-%m-%d %H:%M:%S")
 # Query for author and fill in the details
 try:
     search_query = scholarly.search_author(author_name)
-    author = scholarly.fill(next(search_query), sections=['basics', 'publications'])
+    author = scholarly.fill(next(search_query))
 except Exception as e:
     quit()
     
@@ -25,9 +25,9 @@ except Exception as e:
 # Bookkeeping with publications
 publications = []
 for pub in author["publications"]:
-    del pub["source"]
-    del pub["filled"]
-    del pub["container_type"]
+    # del pub["source"]
+    # del pub["filled"]
+    # del pub["container_type"]
     pub["citedby"] = pub.pop("num_citations")
     pub["last_updated_ts"] = timestamp
     pub["last_updated"] = date_str    
@@ -36,12 +36,12 @@ for pub in author["publications"]:
 # Add last-updated information in the dictionary
 author["last_updated_ts"] = timestamp
 author["last_updated"] = date_str
-# Remove the publications and co-author entries, which are not needed in the JSON
+# Remove the publications entries, which are not needed in the JSON
 del author["publications"]
 # del author["coauthors"]
-del author["filled"]
-del author["container_type"]
-del author["source"]
+# del author["filled"]
+# del author["container_type"]
+# del author["source"]
 
     
 
