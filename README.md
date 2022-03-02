@@ -14,5 +14,3 @@ The GitHub Action script then does the following:
   * Encrypt the secrets json file using the [Github Actions instructions](https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#limits-for-secrets)
   * Use the script `upload_to_google_storage.py`, adapted from [Google](https://cloud.google.com/storage/docs/uploading-objects), to upload the generated files and make them public. 
   * The service account needs to be a "Storage Object Admin" (and not "Project Owner" as outlined in the documentation), and the bucket needs to have object level permissions, and not "bucket policy only". The bucket needs to be public.
-  
- 
