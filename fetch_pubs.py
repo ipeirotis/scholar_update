@@ -23,9 +23,6 @@ except Exception:
 # Bookkeeping with publications
 publications = []
 for pub in author["publications"]:
-    # del pub["source"]
-    # del pub["filled"]
-    # del pub["container_type"]
     pub["citedby"] = pub.pop("num_citations")
     pub["last_updated_ts"] = timestamp
     pub["last_updated"] = date_str
@@ -36,10 +33,6 @@ author["last_updated_ts"] = timestamp
 author["last_updated"] = date_str
 # Remove the publications entries, which are not needed in the JSON
 del author["publications"]
-# del author["coauthors"]
-# del author["filled"]
-# del author["container_type"]
-# del author["source"]
 
 # Save the author profile in a JSON file
 with open(author_name + ".json", "w") as f:
