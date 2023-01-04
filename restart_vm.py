@@ -19,3 +19,5 @@ instance = "web"
 request = service.instances().reset(project=project, zone=zone, instance=instance)
 response = request.execute()
 pprint.pprint(response)
+
+
