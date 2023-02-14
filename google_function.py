@@ -1,10 +1,11 @@
 import functions_framework
 
-
-from scholarly import scholarly
 import json
+import logging
 from datetime import datetime
-import gcsfs
+
+from google.cloud import storage
+from scholarly import scholarly
 
 @functions_framework.http
 def api_call(request):
@@ -33,7 +34,6 @@ def api_call(request):
     
 
 def scholar_update(author_name):
-
     # We want to keep track of the last time we updated the file
     now = datetime.now()
     timestamp = int(datetime.timestamp(now))
@@ -44,7 +44,8 @@ def scholar_update(author_name):
         search_query = scholarly.search_author(author_name)
         author = scholarly.fill(next(search_query))
     except Exception:
-        return "Someting went wrong when searching Google Scholar"
+        logging.exception("Something went wrong when searching Google Scholar")
+        return "Something went wrong when searching Google Scholar"
 
     # Bookkeeping with publications
     publications = []
@@ -61,26 +62,22 @@ def scholar_update(author_name):
     del author["publications"]
 
     try:
-        # Setup access to the Google buckets
-        gfs = gcsfs.GCSFileSystem(
-            project="scholarapi", 
-            token ="cloud"
-            # token="google-credentials-scholarAPI.json"
-        )
+        # Setup access to the Google Cloud Storage bucket
+        client = storage.Client()
+        bucket_name = "publications_scholar"
+        bucket = client.bucket(bucket_name)
 
         # Save the author profile in a JSON file
-        filename = "publications_scholar/" + author_name + ".json"
-        with gfs.open(filename, "w") as f:
-            json.dump(author, f, indent=4)
-        gfs.setxattrs(filename, content_type='application/json')
+        filename = f"{author_name}.json"
+        blob = bucket.blob(str(filename))
+        blob.upload_from_string(json.dumps(author), content_type="application/json")
 
         # Save the publications in a JSON file
-        filename = "publications_scholar/" + author_name + "_pubs.json"
-        with gfs.open(filename, "w") as f:
-            json.dump(publications, f, indent=4)
-        gfs.setxattrs(filename, content_type='application/json')
+        filename = f"{author_name}_pubs.json"
+        blob = bucket.blob(str(filename))
+        blob.upload_from_string(json.dumps(publications), content_type="application/json")
     except Exception:
-        return "Someting went wrong when writing to the bucket"
-
+        logging.exception("Something went wrong when writing to the bucket")
+        return "Something went wrong when writing to the bucket"
 
     return f"Updated entry for author {author_name}"
