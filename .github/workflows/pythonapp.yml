@@ -40,6 +40,12 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v1'
+      with:
+          service_account: 'my-service-account@my-project.iam.gserviceaccount.com'
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          
     - name: Cloud Functions Deploy
       uses: google-github-actions/deploy-cloud-functions@v1
       with:
@@ -51,7 +57,7 @@ jobs:
         entry_point: update_scholar_profile 
         # Runtime to use for the function.
         runtime: python38
-        credentials_json: ${{ secrets.GCP_SA_KEY }}
+
     
 
         
