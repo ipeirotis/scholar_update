@@ -1,13 +1,5 @@
 # To interact with Google Scholar
 scholarly
 
-# To upload the datasets into Google Cloud storage
+# To upload the datasets 
 google-cloud-storage 
-google-auth-oauthlib
-
-# To restart the GCloud instance
-google-api-python-client
-oauth2client
-
-# Just to have a counter
-tqdm
