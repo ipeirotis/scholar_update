@@ -6,6 +6,7 @@ name: Python application
 on:
   schedule:
     - cron: "0 0 * * *"
+    
   push:
     branches: [ master ]
   pull_request:
@@ -18,27 +19,32 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
     - name: Set up Python 3.8
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v2
       with:
         python-version: 3.8
+        
     - name: Install dependencies
       run: |
-        sudo apt-get install -y tor
         python3 -m pip install --upgrade pip
         pip3 install flake8
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        
     - name: Decrypt Google credentials file
       run: ./decrypt_secret.sh
       env:
-        GPG_PASSWORD:  ${{ secrets.GPG_PASSWORD }}    
+        GPG_PASSWORD:  ${{ secrets.GPG_PASSWORD }}
+        
     - name: Fetch latest statistics for Panos
       run: |
         python3 fetch_pubs.py ipeirotis
