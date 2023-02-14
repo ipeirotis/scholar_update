@@ -34,16 +34,19 @@ def update_scholar_profile(request):
 
 def get_scholar_data(author_name):
     try:
+        # Query for author and fill in the details
         search_query = scholarly.search_author(author_name)
         author = scholarly.fill(next(search_query))
     except Exception:
         logging.exception("Error getting data from Google Scholar")
         return None, None
 
+    # We want to keep track of the last time we updated the file
     now = datetime.now()
     timestamp = int(datetime.timestamp(now))
     date_str = now.strftime("%Y-%m-%d %H:%M:%S")
 
+    # Bookkeeping with publications
     publications = []
     for pub in author["publications"]:
         pub["citedby"] = pub.pop("num_citations")
@@ -51,8 +54,10 @@ def get_scholar_data(author_name):
         pub["last_updated"] = date_str
         publications.append(pub)
 
+    # Add last-updated information in the dictionary
     author["last_updated_ts"] = timestamp
     author["last_updated"] = date_str
+    # Remove the publications entries, which are not needed in the JSON
     del author["publications"]
 
     return author, publications
@@ -63,10 +68,12 @@ def store_data_on_bucket(filename, author, publications):
         bucket_name = "publications_scholar"
         bucket = client.bucket(bucket_name)
 
+        # Save the author profile in a JSON file
         author_filename = f"{filename}.json"
         blob = bucket.blob(str(author_filename))
         blob.upload_from_string(json.dumps(author), content_type="application/json")
-
+        
+        # Save the publications in a JSON file
         publications_filename = f"{filename}_pubs.json"
         blob = bucket.blob(str(publications_filename))
         blob.upload_from_string(json.dumps(publications), content_type="application/json")
