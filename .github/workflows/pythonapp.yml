@@ -40,16 +40,11 @@ jobs:
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-    - name: Decrypt Google credentials file
-      run: ./decrypt_secret.sh
-      env:
-        GPG_PASSWORD:  ${{ secrets.GPG_PASSWORD }}
-
-    - name: Authenticate to Google Cloud
+    - name: Authenticate with GCP
       uses: google-github-actions/auth@v1
       with:
-        project_id: scholarapi
-        credentials_json: google-credentials-scholarAPI.json
+        credentials: ${{ secrets.GCP_SA_KEY }}
+        export_default_credentials: true
 
     - name: Cloud Functions Deploy
       uses: google-github-actions/deploy-cloud-functions@v1
