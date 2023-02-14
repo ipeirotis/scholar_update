@@ -39,7 +39,19 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-        
+
+    - name: Cloud Functions Deploy
+      uses: google-github-actions/deploy-cloud-functions@v1
+      with:
+        # Name of the Cloud Function.
+        name: scholar-update
+        # ID of the project in which to deploy the Cloud Function.
+        project_id: scholarapi
+        # Name of a function (as defined in source code) that will be executed. Defaults to the resource name suffix, if not specified.
+        entry_point: api_call 
+        # Runtime to use for the function.
+        runtime: python3.8
+    
     - name: Decrypt Google credentials file
       run: ./decrypt_secret.sh
       env:
