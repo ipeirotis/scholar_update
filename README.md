@@ -2,7 +2,7 @@
 
 # How to create a JSON file with your Google Scholar data
 
-With a small Python script that uses the [scholarly library]((https://github.com/OrganicIrradiation/scholarly), you can easily scrape your Google Scholar profile and generate a JSON file containing information about your publications and their statistics. Once you have this file, you can store it in a publicly accessible Google Bucket, which will allow others to view your data.
+With a small Python script that uses the [scholarly library](https://github.com/OrganicIrradiation/scholarly), you can easily scrape your Google Scholar profile and generate a JSON file containing information about your publications and their statistics. Once you have this file, you can store it in a publicly accessible Google Bucket, which will allow others to view your data.
 
 To set this up, follow these steps:
 
