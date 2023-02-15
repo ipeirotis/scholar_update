@@ -63,7 +63,7 @@ jobs:
       
     - name: Deploy Cloud Function
       run: |
-        gcloud functions deploy ${{ env.FUNCTION_NAME }} --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} --entry-point update_scholar_profile --runtime python38 --trigger-http
+        gcloud functions deploy ${{ env.FUNCTION_NAME }} --gen2 --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} --entry-point update_scholar_profile --runtime python38 --trigger-http
         
     - name: Create a scheduled task on Cloud Scheduler
       run: |
