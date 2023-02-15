@@ -49,14 +49,14 @@ jobs:
 
     - name: Deploy Cloud Function
       run: |
-        gcloud functions deploy scholar-update --project scholar-pub-data --region us-central1 --gen2 --entry-point update_scholar_profile --runtime python38 --trigger-http --allow-unauthenticated  
+        gcloud functions deploy scholar-update --project scholar-pub-data --region us-central1 --gen2 --entry-point update_scholar_profile --runtime python38 --trigger-http --allow-unauthenticated
+        
+    - name: Create a scheduled task on Cloud Scheduler
+      run: |
+        gcloud scheduler jobs update http pubs-ipeirotis-daily --schedule "0 1 * * *" --uri $(gcloud functions describe scholar-update --format "value(serviceConfig.uri)") --message-body "{'author_name':'ipeirotis','filename':'ipeirotis'}" --time-zone "UTC" --project scholar-pub-data --location us-central1
+        gcloud scheduler jobs update http pubs-foster-daily --schedule "0 2 * * *" --uri $(gcloud functions describe scholar-update --format "value(serviceConfig.uri)") --message-body "{'author_name':'foster provost','filename':'provost'}" --time-zone "UTC" --project scholar-pub-data --location us-central1
 
-    #- name: Cloud Functions Deploy
-      # uses: google-github-actions/deploy-cloud-functions@v1
-      # with:
-        # name: scholar-update
-        # project_id: scholar-pub-data
-        # entry_point: update_scholar_profile 
-        # runtime: python38
+
+
 
 
