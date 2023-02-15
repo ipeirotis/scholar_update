@@ -1,12 +1,17 @@
 [![GitHub: Build Status](https://github.com/ipeirotis/scholar_update/workflows/Python%20application/badge.svg)](https://github.com/ipeirotis/scholar_update/actions?query=workflow%3A%22Python+application%22+branch%3Amaster)    
 
-# Create a JSON file with my Google Scholar data
+# How to create a JSON file with your Google Scholar data
 
-A small script that scrapes Google Scholar using the [Python scholarly library](https://github.com/OrganicIrradiation/scholarly), creates a JSON file with my publications and their statistics, and then posts the resulting JSON files on a publicly accessible Google Bucket ([ipeirotis.json](https://storage.googleapis.com/publications_scholar/ipeirotis.json) and [ipeirotis_pubs.json](https://storage.googleapis.com/publications_scholar/ipeirotis_pubs.json)).
+With a small Python script that uses the [scholarly library]((https://github.com/OrganicIrradiation/scholarly), you can easily scrape your Google Scholar profile and generate a JSON file containing information about your publications and their statistics. Once you have this file, you can store it in a publicly accessible Google Bucket, which will allow others to view your data.
 
-Structure:
-* Create a Google Bucket, publicly readable
-* Create a Google Function with the `main.py` script.
-* Create a Cloud Scheduler tasks (aka cron) that triggers the function every day.
+To set this up, follow these steps:
 
-The Github actions file contains the instructions for deployment.
+* Create a new Google Bucket and set it to be publicly readable.
+* Create a Google Function that runs the `main.py` script to scrape your Google Scholar profile and generate the JSON file.
+* Schedule the function to run automatically each day using a Cloud Scheduler task.
+
+If you want to automate the deployment of this process, you can use the instructions provided in the Github actions file.
+
+Once you have completed these steps, you should be able to access your Google Scholar data in JSON format from the publicly accessible Google Bucket. 
+
+My two files are [ipeirotis.json](https://storage.googleapis.com/publications_scholar/ipeirotis.json) and [ipeirotis_pubs.json](https://storage.googleapis.com/publications_scholar/ipeirotis_pubs.json).
