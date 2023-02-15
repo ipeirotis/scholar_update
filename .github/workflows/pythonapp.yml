@@ -1,62 +1,70 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
 name: Python application
 
+strategy:
+  matrix:
+    python-version: [3.10]
+
 on:
-
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
+env:
+  PROJECT_ID: scholar-pub-data
+  REGION: us-central1
+  LOCATION: $REGION
+  FUNCTION_NAME: scholar-update
 
 jobs:
-  build:
-
+  lint:
     runs-on: ubuntu-latest
-
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
       
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v4.5.0
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: ctions/setup-python@v4.5.0
       with:
-        python-version: 3.8
+        python-version: ${{ matrix.python-version }}
         
     - name: Install dependencies
+      uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: ${{ runner.os }}-pip-
       run: |
-        python3 -m pip install --upgrade pip
-        pip3 install flake8
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install flake8
         
     - name: Lint with flake8
       run: |
-        # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-
+      
+  deploy:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+      
     - id: 'auth'
       uses: 'google-github-actions/auth@v1'
       with:
-          project_id: scholar-pub-data
+          project_id: ${{ env.PROJECT_ID }}
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-
+          
     - name: 'Set up Cloud SDK'
       uses: google-github-actions/setup-gcloud@v1.1.0
-
+      
     - name: Deploy Cloud Function
       run: |
-        gcloud functions deploy scholar-update --project scholar-pub-data --region us-central1 --gen2 --entry-point update_scholar_profile --runtime python38 --trigger-http --allow-unauthenticated
+        gcloud functions deploy ${{ env.FUNCTION_NAME }} --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} --entry-point update_scholar_profile --runtime python38 --trigger-http
         
     - name: Create a scheduled task on Cloud Scheduler
       run: |
-        gcloud scheduler jobs update http pubs-ipeirotis-daily --schedule "0 1 * * *" --uri $(gcloud functions describe scholar-update --format "value(serviceConfig.uri)") --message-body "{'author_name':'ipeirotis','filename':'ipeirotis'}" --time-zone "UTC" --project scholar-pub-data --location us-central1
-        gcloud scheduler jobs update http pubs-foster-daily --schedule "0 2 * * *" --uri $(gcloud functions describe scholar-update --format "value(serviceConfig.uri)") --message-body "{'author_name':'foster provost','filename':'provost'}" --time-zone "UTC" --project scholar-pub-data --location us-central1
-
-
-
-
-
+        gcloud scheduler jobs create http pubs-ipeirotis-daily --update --schedule "0 1 * * *" --uri $(gcloud functions describe ${{ env.FUNCTION_NAME }} --format "value(serviceConfig.uri)") --message-body "{\"author_name\":\"ipeirotis\",\"filename\":\"ipeirotis\"}" --time-zone "UTC" --project ${{ env.PROJECT_ID }} --location ${{ env.LOCATION }}
+        gcloud scheduler jobs create http pubs-foster-daily --update --schedule "0 2 * * *" --uri $(gcloud functions describe ${{ env.FUNCTION_NAME }} --format "value(serviceConfig.uri)") --message-body "{\"author_name\":\"foster provost\",\"filename\":\"provost\"}" --time-zone "UTC" --project ${{ env.PROJECT_ID }} --location ${{ env.LOCATION }}
