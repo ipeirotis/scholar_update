@@ -4,9 +4,7 @@
 name: Python application
 
 on:
-  schedule:
-    - cron: "0 0 * * *"
-    
+
   push:
     branches: [ master ]
   pull_request:
@@ -45,17 +43,20 @@ jobs:
       with:
           project_id: scholar-pub-data
           credentials_json: ${{ secrets.GCP_SA_KEY }}
-          
-    - name: Cloud Functions Deploy
-      uses: google-github-actions/deploy-cloud-functions@v1
-      with:
-        # Name of the Cloud Function.
-        name: scholar-update
-        # ID of the project in which to deploy the Cloud Function.
-        project_id: scholar-pub-data
-        # Name of a function (as defined in source code) that will be executed. Defaults to the resource name suffix, if not specified.
-        entry_point: update_scholar_profile 
-        # Runtime to use for the function.
-        runtime: python38
+
+    - name: 'Set up Cloud SDK'
+      uses: google-github-actions/setup-gcloud@v1.1.0
+
+    - name: Deploy Cloud Function
+      run: |
+        gcloud functions deploy scholar-update --project scholar-pub-data --gen2 --entry-point update_scholar_profile --runtime python38 --trigger-http --allow-unauthenticated  
+
+    #- name: Cloud Functions Deploy
+      # uses: google-github-actions/deploy-cloud-functions@v1
+      # with:
+        # name: scholar-update
+        # project_id: scholar-pub-data
+        # entry_point: update_scholar_profile 
+        # runtime: python38
 
 
