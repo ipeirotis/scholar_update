@@ -2,15 +2,11 @@
 
 # Create a JSON file with my Google Scholar data
 
-A small script that scrapes Google Scholar using the [Python scholarly library](https://github.com/OrganicIrradiation/scholarly)
-and creates a JSON file with my publications and their statistics.
+A small script that scrapes Google Scholar using the [Python scholarly library](https://github.com/OrganicIrradiation/scholarly), creates a JSON file with my publications and their statistics, and then posts the resulting JSON files on a publicly accessible Google Bucket ([ipeirotis.json](https://storage.googleapis.com/publications_scholar/ipeirotis.json) and [ipeirotis_pubs.json](https://storage.googleapis.com/publications_scholar/ipeirotis_pubs.json)).
 
-The GitHub Action script then does the following:
-* Runs the script and fetches the latest data from Google Scholar.
-* The script runs daily to update the JSON files.  
-* The then copies the two JSON files on a Google Bucket, [ipeirotis.json](https://storage.googleapis.com/publications_scholar/ipeirotis.json) and [ipeirotis_pubs.json](https://storage.googleapis.com/publications_scholar/ipeirotis_pubs.json). To enable the upload:
+Structure:
+* Create a Google Bucket, publicly readable
+* Create a Google Function with the `main.py` script.
+* Create a Cloud Scheduler tasks (aka cron) that triggers the function every day.
 
-  * Follow the [Google instructions](https://cloud.google.com/storage/docs/reference/libraries) to fetch the secrets json file
-  * Encrypt the secrets json file using the [Github Actions instructions](https://help.github.com/en/actions/configuring-and-managing-workflows/creating-and-storing-encrypted-secrets#limits-for-secrets)
-  * Use the script `upload_to_google_storage.py`, adapted from [Google](https://cloud.google.com/storage/docs/uploading-objects), to upload the generated files and make them public. 
-  * The service account needs to be a "Storage Object Admin" (and not "Project Owner" as outlined in the documentation), and the bucket needs to have object level permissions, and not "bucket policy only". The bucket needs to be public.
+The Github actions file contains the instructions for deployment.
