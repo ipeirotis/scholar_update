@@ -10,7 +10,7 @@ To set this up, follow these steps:
 * Create a Google Function that runs the `main.py` script to scrape your Google Scholar profile and generate the JSON file.
 * Schedule the function to run automatically each day using a Cloud Scheduler task.
 
-If you want to automate the deployment of this process, you can use the instructions provided in the Github actions file.
+The instructions in the [Github actions file](https://github.com/ipeirotis/scholar_update/blob/master/.github/workflows/pythonapp.yml) show how to authenticate your script and how to schedule the function using the Cloud Scheduler (aka cron).
 
 Once you have completed these steps, you should be able to access your Google Scholar data in JSON format from the publicly accessible Google Bucket. 
 
