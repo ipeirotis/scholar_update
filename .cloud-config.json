@@ -5,7 +5,10 @@
   "roles": ["roles/cloudfunctions.developer", "roles/cloudscheduler.admin", "roles/logging.viewer"],
   "resource_roles": [
     {"role": "roles/iam.serviceAccountUser", "resource": "projects/scholar-pub-data/serviceAccounts/374424129382-compute@developer.gserviceaccount.com"},
-    {"role": "roles/storage.objectAdmin", "resource": "gs://publications_scholar"}
+    {"role": "roles/storage.objectAdmin", "resource": "gs://publications_scholar"},
+    {"role": "roles/iam.serviceAccountUser", "resource": "projects/scholar-pub-data/serviceAccounts/scholar-update-runtime@scholar-pub-data.iam.gserviceaccount.com"},
+    {"role": "roles/iam.serviceAccountUser", "resource": "projects/scholar-pub-data/serviceAccounts/scheduler-invoker@scholar-pub-data.iam.gserviceaccount.com"},
+    {"role": "roles/artifactregistry.admin", "resource": "projects/scholar-pub-data/locations/us-central1/repositories/gcf-artifacts"}
   ],
   "created_at": "2026-09-28T18:09:11Z"
 }
