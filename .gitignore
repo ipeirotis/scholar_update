@@ -102,3 +102,8 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Cloud -- never commit plaintext credentials
+credentials.json
+credentials_clean.json
+/tmp/

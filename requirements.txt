@@ -1,5 +1,10 @@
 # To interact with Google Scholar
-scholarly
+scholarly==1.7.11
+# scholarly 1.7.11 imports bibtexparser.bibdatabase, which was removed in 2.0
+bibtexparser<2
 
-# To upload the datasets 
-google-cloud-storage 
+# To upload the datasets
+google-cloud-storage
+
+# HTTP entry point (provided by Cloud Functions, needed for local runs)
+functions-framework

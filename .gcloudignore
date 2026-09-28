@@ -1,0 +1,15 @@
+# Files not uploaded by `gcloud functions deploy`
+#!include:.gitignore
+credentials.json
+credentials_clean.json
+.gcloudignore
+.git
+.gitignore
+.github/
+.claude/
+.cloud-config.json
+.cloud-credentials.*
+AGENTS.md
+CLAUDE.md
+README.md
+__pycache__/

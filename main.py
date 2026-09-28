@@ -14,15 +14,16 @@ def update_scholar_profile(request):
        The response text, or any set of values that can be turned into a
        Response object using `make_response`.
     """
-    request_json = request.get_json(silent=True)
+    request_json = request.get_json(silent=True) or {}
     request_args = request.args
 
+    scholar_id = request_json.get("scholar_id", request_args.get("scholar_id"))
     author_name = request_json.get("author_name", request_args.get("author_name"))
     filename = request_json.get("filename", request_args.get("filename"))
-    if not author_name or not filename:
-        return "Missing author name or filename", 400
+    if not (scholar_id or author_name) or not filename:
+        return "Missing scholar_id/author_name or filename", 400
 
-    author, publications = get_scholar_data(author_name)
+    author, publications = get_scholar_data(author_name, scholar_id)
     if author is None or publications is None:
         return "Error getting data from Google Scholar", 500
 
@@ -30,13 +31,17 @@ def update_scholar_profile(request):
     if result is None:
         return "Error storing data on Google Bucket", 500
 
-    return f"Updated entry for author {author_name} with filename {filename}", 200
+    return f"Updated entry for author {scholar_id or author_name} with filename {filename}", 200
 
-def get_scholar_data(author_name):
+def get_scholar_data(author_name, scholar_id=None):
     try:
-        # Query for author and fill in the details
-        search_query = scholarly.search_author(author_name)
-        author = scholarly.fill(next(search_query))
+        # Look up the profile by ID when we have one. Google Scholar's author
+        # search now redirects to a sign-in page, so search by name fails.
+        if scholar_id:
+            author = scholarly.search_author_id(scholar_id)
+        else:
+            author = next(scholarly.search_author(author_name))
+        author = scholarly.fill(author)
     except Exception:
         logging.exception("Error getting data from Google Scholar")
         return None, None
