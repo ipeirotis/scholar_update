@@ -23,7 +23,7 @@ Example outputs:
 
 ```
 main.py                          # Cloud Function entry point: update_scholar_profile
-requirements.txt                 # scholarly, google-cloud-storage
+requirements.txt                 # scholarly, google-cloud-storage, functions-framework
 .github/workflows/pythonapp.yml  # flake8 lint, then gcloud functions deploy
 .claude/skills/cloud-bootstrap/  # Skill that manages encrypted GCP credentials
 ```
@@ -44,7 +44,7 @@ requirements.txt                 # scholarly, google-cloud-storage
 
 ```bash
 pip install -r requirements.txt
-pip install flake8 functions-framework
+pip install flake8
 
 # Same lint checks CI runs
 flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -67,7 +67,7 @@ repository secret. To deploy manually from an authenticated session:
 ```bash
 gcloud functions deploy scholar-update --gen2 --project scholar-pub-data \
   --region us-central1 --entry-point update_scholar_profile \
-  --runtime python38 --trigger-http
+  --runtime python312 --trigger-http
 ```
 
 ## Conventions

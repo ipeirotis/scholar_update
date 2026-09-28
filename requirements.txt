@@ -1,5 +1,10 @@
 # To interact with Google Scholar
 scholarly
+# scholarly imports bibtexparser's v1 API (bibtexparser.bibdatabase), removed in 2.0
+bibtexparser<2
 
 # To upload the datasets 
 google-cloud-storage 
+
+# HTTP entry point decorator used in main.py (provided by Cloud Functions at runtime)
+functions-framework
