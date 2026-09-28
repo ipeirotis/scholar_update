@@ -1,4 +1,7 @@
 # Files not uploaded by `gcloud functions deploy`
+#!include:.gitignore
+credentials.json
+credentials_clean.json
 .gcloudignore
 .git
 .gitignore
