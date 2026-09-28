@@ -15,6 +15,17 @@ if [ -z "$USER_EMAIL" ] || [ ! -f "$ENC_FILE" ]; then exit 0; fi
 KEY="${GCP_CREDENTIALS_KEY:-$CLOUD_CREDENTIALS_KEY}"
 if [ -z "$KEY" ]; then exit 0; fi
 
+# --- Warn on credential age (same per-file check as the Authenticate workflow) ---
+# Normal sessions authenticate here and never reach that workflow, so without
+# this the 180-day rotation warning would never fire.
+COMMIT_TS=$(git log -1 --format=%ct -- "$ENC_FILE" 2>/dev/null || true)
+if [ -z "$COMMIT_TS" ]; then
+  COMMIT_TS=$(date -d "$(jq -r '.created_at // empty' "$CONFIG" 2>/dev/null)" +%s 2>/dev/null || true)
+fi
+if [ -n "$COMMIT_TS" ] && [ "$(( ( $(date +%s) - COMMIT_TS ) / 86400 ))" -gt 180 ]; then
+  echo "NOTE: GCP credentials in $ENC_FILE are over 180 days old — rotate them (cloud-bootstrap Credential Rotation workflow)."
+fi
+
 # --- Drop the sandbox's placeholder gcloud token ---
 # The Claude Code on the Web container exports CLOUDSDK_AUTH_ACCESS_TOKEN set to
 # a proxy placeholder. gcloud gives that variable precedence over any activated
