@@ -68,3 +68,15 @@ jobs:
       run: |
         gcloud functions deploy ${{ env.FUNCTION_NAME }} --gen2 --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} --entry-point update_scholar_profile --runtime python312 --trigger-http --service-account ${{ env.RUNTIME_SA }}
 
+    # Deploy keeps an existing function's invoker policy, and this identity cannot edit Cloud Run IAM,
+    # so check the result instead: an unauthenticated call must be rejected
+    - name: Check the function is not publicly invokable
+      run: |
+        URL=$(gcloud functions describe ${{ env.FUNCTION_NAME }} --gen2 --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} --format 'value(url)')
+        CODE=$(curl -s -o /dev/null -w '%{http_code}' -X POST "$URL" -H 'Content-Type: application/json' -d '{}')
+        echo "Unauthenticated call to $URL returned HTTP $CODE"
+        if [ "$CODE" != "401" ] && [ "$CODE" != "403" ]; then
+          echo "::error::${{ env.FUNCTION_NAME }} accepts unauthenticated calls; remove the allUsers roles/run.invoker binding"
+          exit 1
+        fi
+
