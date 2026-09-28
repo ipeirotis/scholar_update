@@ -43,8 +43,10 @@ requirements.txt                 # scholarly (pinned), bibtexparser<2, google-cl
 | Region | `us-central1` |
 | Cloud Function (gen2, HTTP) | `scholar-update`, entry point `update_scholar_profile` |
 | GCS bucket (public read) | `publications_scholar` (hard-coded in `store_data_on_bucket`) |
-| Runtime service account | `374424129382-compute@developer.gserviceaccount.com` (default compute SA) |
-| Cloud Scheduler jobs (`us-central1`) | `pubs-ipeirotis` at 03:00 (`scholar_id` `PA9La6oAAAAJ`, filename `ipeirotis`) and `pubs-foster` at 04:00 (`-Km63D4AAAAJ`, `provost`), America/New_York. They already exist; the creation commands in the workflow are commented out and predate `scholar_id`. |
+| Runtime service account | `scholar-update-runtime@scholar-pub-data.iam.gserviceaccount.com`; its only role is `roles/storage.objectAdmin` on the bucket |
+| Invoker | Not public. Only `scheduler-invoker@scholar-pub-data.iam.gserviceaccount.com` has `roles/run.invoker` on the service |
+| Cloud Scheduler jobs (`us-central1`) | `pubs-ipeirotis` at 03:00 (`scholar_id` `PA9La6oAAAAJ`, filename `ipeirotis`) and `pubs-foster` at 04:00 (`-Km63D4AAAAJ`, `provost`), America/New_York. Both call the function with an OIDC token for `scheduler-invoker` and retry once after 10 minutes. They are managed with `gcloud scheduler`, not in this repo. |
+| Alerting | Cloud Monitoring policy "scholar-update: nightly run failed" emails the owner on any 5xx from the function or any Scheduler job error |
 | CI deploy identity | `github@scholar-pub-data.iam.gserviceaccount.com`, key in the `GCP_SA_KEY` repo secret |
 
 ## Local development
@@ -69,13 +71,19 @@ the function in a loop.
 
 Pushes to `master` run `.github/workflows/pythonapp.yml`: flake8, then
 `gcloud functions deploy scholar-update --gen2 ...` using the `GCP_SA_KEY`
-repository secret. To deploy manually from an authenticated session:
+repository secret. Pull requests run only the lint job; they never deploy.
+To deploy manually from an authenticated session:
 
 ```bash
 gcloud functions deploy scholar-update --gen2 --project scholar-pub-data \
   --region us-central1 --entry-point update_scholar_profile \
-  --runtime python312 --trigger-http
+  --runtime python312 --trigger-http \
+  --service-account scholar-update-runtime@scholar-pub-data.iam.gserviceaccount.com
 ```
+
+Never deploy with `--allow-unauthenticated`: the function takes the output
+`filename` from the request, so a public endpoint lets anyone overwrite files
+in the public bucket. To invoke it by hand, run one of the Scheduler jobs.
 
 `.gcloudignore` limits the upload to `main.py` and `requirements.txt`. To check
 that a deploy works end to end, run a job and look at the bucket timestamps:
@@ -107,7 +115,7 @@ Roles granted:
 | `roles/cloudfunctions.developer` | project | Deploy/update `scholar-update`; includes invoking it and `projects.get` |
 | `roles/cloudscheduler.admin` | project | Create, edit, and run the daily Scheduler jobs |
 | `roles/logging.viewer` | project | Read function logs when debugging |
-| `roles/iam.serviceAccountUser` | runtime SA `374424129382-compute@…` only | Required to deploy a function (or Scheduler job) that runs as that SA |
+| `roles/iam.serviceAccountUser` | SAs `scholar-update-runtime@…`, `scheduler-invoker@…`, and `374424129382-compute@…` only | Deploy the function as its runtime SA and edit the Scheduler jobs that use the invoker SA |
 | `roles/storage.objectAdmin` | bucket `publications_scholar` only | Read/write the generated JSON files |
 
 **Multi-user setup.** Each team member has their own key, encrypted with their

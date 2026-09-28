@@ -1,9 +1,13 @@
 import functions_framework
 import json
 import logging
+import re
 from datetime import datetime
 from google.cloud import storage
 from scholarly import scholarly
+
+# Output names become object names in the public bucket, so keep them simple
+FILENAME_RE = re.compile(r"[A-Za-z0-9_-]{1,64}")
 
 @functions_framework.http
 def update_scholar_profile(request):
@@ -22,6 +26,8 @@ def update_scholar_profile(request):
     filename = request_json.get("filename", request_args.get("filename"))
     if not (scholar_id or author_name) or not filename:
         return "Missing scholar_id/author_name or filename", 400
+    if not isinstance(filename, str) or not FILENAME_RE.fullmatch(filename):
+        return "Invalid filename: use 1-64 letters, digits, '-' or '_'", 400
 
     author, publications = get_scholar_data(author_name, scholar_id)
     if author is None or publications is None:
