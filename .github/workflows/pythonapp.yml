@@ -11,6 +11,7 @@ env:
   REGION: us-central1
   LOCATION: $REGION
   FUNCTION_NAME: scholar-update
+  RUNTIME_SA: scholar-update-runtime@scholar-pub-data.iam.gserviceaccount.com
 
 jobs:
   lint:
@@ -47,6 +48,8 @@ jobs:
       
   deploy:
     needs: lint
+    # Deploy only from master; pull requests run the lint job alone
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
@@ -63,9 +66,5 @@ jobs:
       
     - name: Deploy Cloud Function
       run: |
-        gcloud functions deploy ${{ env.FUNCTION_NAME }} --gen2 --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} --entry-point update_scholar_profile --runtime python312 --trigger-http
-        
-    # - name: Create a scheduled task on Cloud Scheduler
-    #  run: |
-        # gcloud scheduler jobs create http pubs-ipeirotis --schedule "0 1 * * *" --uri $(gcloud functions describe ${{ env.FUNCTION_NAME }} --format "value(serviceConfig.uri)") --message-body "{\"author_name\":\"ipeirotis\",\"filename\":\"ipeirotis\"}" --time-zone "UTC" --project ${{ env.PROJECT_ID }} --location ${{ env.LOCATION }}
-        # gcloud scheduler jobs create http pubs-foster  --schedule "0 2 * * *" --uri $(gcloud functions describe ${{ env.FUNCTION_NAME }} --format "value(serviceConfig.uri)") --message-body "{\"author_name\":\"foster provost\",\"filename\":\"provost\"}" --time-zone "UTC" --project ${{ env.PROJECT_ID }} --location ${{ env.LOCATION }}
+        gcloud functions deploy ${{ env.FUNCTION_NAME }} --gen2 --project ${{ env.PROJECT_ID }} --region ${{ env.REGION }} --entry-point update_scholar_profile --runtime python312 --trigger-http --service-account ${{ env.RUNTIME_SA }}
+
