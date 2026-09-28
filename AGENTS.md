@@ -13,7 +13,13 @@ library and writes two JSON files to a public GCS bucket:
   renamed to `citedby`
 
 Both files get `last_updated` / `last_updated_ts` fields. The function takes
-`author_name` and `filename` from the JSON body or query string.
+`scholar_id`, `author_name`, and `filename` from the JSON body or query string;
+`filename` and one of the other two are required.
+
+Use `scholar_id` (the `user=` value in a Scholar profile URL). Google Scholar's
+author search now redirects to a Google sign-in page, so lookups by
+`author_name` fail with `StopIteration` / `MaxTriesExceededException`. That is
+why the files stopped updating after 2025-05-09.
 
 Example outputs:
 - https://storage.googleapis.com/publications_scholar/ipeirotis.json
@@ -23,7 +29,8 @@ Example outputs:
 
 ```
 main.py                          # Cloud Function entry point: update_scholar_profile
-requirements.txt                 # scholarly, google-cloud-storage
+requirements.txt                 # scholarly (pinned), bibtexparser<2, google-cloud-storage, functions-framework
+.gcloudignore                    # Keeps deploy uploads to main.py + requirements.txt
 .github/workflows/pythonapp.yml  # flake8 lint, then gcloud functions deploy
 .claude/skills/cloud-bootstrap/  # Skill that manages encrypted GCP credentials
 ```
@@ -37,14 +44,14 @@ requirements.txt                 # scholarly, google-cloud-storage
 | Cloud Function (gen2, HTTP) | `scholar-update`, entry point `update_scholar_profile` |
 | GCS bucket (public read) | `publications_scholar` (hard-coded in `store_data_on_bucket`) |
 | Runtime service account | `374424129382-compute@developer.gserviceaccount.com` (default compute SA) |
-| Cloud Scheduler jobs (`us-central1`) | `pubs-ipeirotis` at 03:00 and `pubs-foster` at 04:00, America/New_York. They already exist; the creation commands in the workflow are commented out. |
+| Cloud Scheduler jobs (`us-central1`) | `pubs-ipeirotis` at 03:00 (`scholar_id` `PA9La6oAAAAJ`, filename `ipeirotis`) and `pubs-foster` at 04:00 (`-Km63D4AAAAJ`, `provost`), America/New_York. They already exist; the creation commands in the workflow are commented out and predate `scholar_id`. |
 | CI deploy identity | `github@scholar-pub-data.iam.gserviceaccount.com`, key in the `GCP_SA_KEY` repo secret |
 
 ## Local development
 
 ```bash
-pip install -r requirements.txt
-pip install flake8 functions-framework
+pip install -r requirements.txt   # pins scholarly 1.7.11 + bibtexparser<2; keep both pins
+pip install flake8
 
 # Same lint checks CI runs
 flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
@@ -52,7 +59,7 @@ flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statist
 
 # Run the function locally (writes to the real bucket, so it needs GCP credentials)
 functions-framework --target update_scholar_profile --debug
-curl "localhost:8080/?author_name=ipeirotis&filename=test"
+curl "localhost:8080/?scholar_id=PA9La6oAAAAJ&filename=test"
 ```
 
 There is no test suite. Google Scholar rate-limits scraping, so avoid calling
@@ -67,7 +74,15 @@ repository secret. To deploy manually from an authenticated session:
 ```bash
 gcloud functions deploy scholar-update --gen2 --project scholar-pub-data \
   --region us-central1 --entry-point update_scholar_profile \
-  --runtime python38 --trigger-http
+  --runtime python312 --trigger-http
+```
+
+`.gcloudignore` limits the upload to `main.py` and `requirements.txt`. To check
+that a deploy works end to end, run a job and look at the bucket timestamps:
+
+```bash
+gcloud scheduler jobs run pubs-ipeirotis --location us-central1
+gcloud storage ls -l gs://publications_scholar/
 ```
 
 ## Conventions
