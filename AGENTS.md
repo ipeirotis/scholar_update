@@ -13,13 +13,15 @@ library and writes two JSON files to a public GCS bucket:
   renamed to `citedby`
 
 Both files get `last_updated` / `last_updated_ts` fields. The function takes
-`scholar_id`, `author_name`, and `filename` from the JSON body or query string;
-`filename` and one of the other two are required.
+`scholar_id` (the `user=` value in a Scholar profile URL) and `filename` from
+the JSON body or query string; both are required. `_pubs.json` is written
+before `<filename>.json`, so `<filename>.json`'s timestamp only moves when both
+uploads succeed.
 
-Use `scholar_id` (the `user=` value in a Scholar profile URL). Google Scholar's
-author search now redirects to a Google sign-in page, so lookups by
-`author_name` fail with `StopIteration` / `MaxTriesExceededException`. That is
-why the files stopped updating after 2025-05-09.
+There is no lookup by name: Google Scholar's author search redirects to a
+Google sign-in page, so the old `author_name` parameter failed with
+`StopIteration` / `MaxTriesExceededException` (why the files stopped updating
+after 2025-05-09) and was removed.
 
 Example outputs:
 - https://storage.googleapis.com/publications_scholar/ipeirotis.json
@@ -32,7 +34,8 @@ main.py                          # Cloud Function entry point: update_scholar_pr
 requirements.txt                 # scholarly (pinned), bibtexparser<2, google-cloud-storage, functions-framework
 .gcloudignore                    # Keeps deploy uploads to main.py + requirements.txt
 monitoring/                      # Alert policy definitions (gcloud monitoring policies create --policy-from-file=...)
-.github/workflows/pythonapp.yml  # flake8 lint, then gcloud functions deploy
+tests/test_main.py               # Unit tests; Scholar and GCS are mocked (not deployed)
+.github/workflows/pythonapp.yml  # flake8 + pytest, then gcloud functions deploy
 .claude/skills/cloud-bootstrap/  # Skill that manages encrypted GCP credentials
 ```
 
@@ -55,25 +58,27 @@ monitoring/                      # Alert policy definitions (gcloud monitoring p
 
 ```bash
 pip install -r requirements.txt   # pins scholarly 1.7.11 + bibtexparser<2; keep both pins
-pip install flake8
+pip install flake8 pytest
 
-# Same lint checks CI runs
+# Same checks CI runs; all three must pass
 flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+flake8 . --count --max-complexity=10 --max-line-length=127 --statistics
+python -m pytest
 
 # Run the function locally (writes to the real bucket, so it needs GCP credentials)
 functions-framework --target update_scholar_profile --debug
 curl "localhost:8080/?scholar_id=PA9La6oAAAAJ&filename=test"
 ```
 
-There is no test suite. Google Scholar rate-limits scraping, so avoid calling
-the function in a loop.
+The unit tests mock `scholarly` and `google.cloud.storage`, so they run
+offline and never touch the bucket. Google Scholar rate-limits scraping, so
+avoid calling the real function in a loop.
 
 ## Deployment
 
-Pushes to `master` run `.github/workflows/pythonapp.yml`: flake8, then
+Pushes to `master` run `.github/workflows/pythonapp.yml`: flake8 and pytest, then
 `gcloud functions deploy scholar-update --gen2 ...` using the `GCP_SA_KEY`
-repository secret. Pull requests run only the lint job; they never deploy.
+repository secret. Pull requests run only the lint and test job; they never deploy.
 To deploy manually from an authenticated session:
 
 ```bash
@@ -87,7 +92,7 @@ Never deploy with `--allow-unauthenticated`: the function takes the output
 `filename` from the request, so a public endpoint lets anyone overwrite files
 in the public bucket. To invoke it by hand, run one of the Scheduler jobs.
 
-`.gcloudignore` limits the upload to `main.py` and `requirements.txt`. To check
+`.gcloudignore` limits the upload to `main.py` and `requirements.txt` (it excludes `tests/` and `monitoring/`). To check
 that a deploy works end to end, run a job and look at the bucket timestamps:
 
 ```bash

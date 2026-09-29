@@ -24,6 +24,7 @@ logging.basicConfig(level=logging.WARNING)
 logging.getLogger("scholarly").setLevel(logging.INFO)
 logging.getLogger("httpx").setLevel(logging.INFO)
 
+
 @functions_framework.http
 def update_scholar_profile(request):
     """HTTP Cloud Function.
@@ -37,14 +38,13 @@ def update_scholar_profile(request):
     request_args = request.args
 
     scholar_id = request_json.get("scholar_id", request_args.get("scholar_id"))
-    author_name = request_json.get("author_name", request_args.get("author_name"))
     filename = request_json.get("filename", request_args.get("filename"))
-    if not (scholar_id or author_name) or not filename:
-        return "Missing scholar_id/author_name or filename", 400
+    if not scholar_id or not filename:
+        return "Missing scholar_id or filename", 400
     if not isinstance(filename, str) or not FILENAME_RE.fullmatch(filename):
         return "Invalid filename: use 1-64 letters, digits, '-' or '_'", 400
 
-    author, publications = get_scholar_data(author_name, scholar_id)
+    author, publications = get_scholar_data(scholar_id)
     if author is None or publications is None:
         log_if_stale(filename)
         return "Error getting data from Google Scholar", 500
@@ -54,16 +54,14 @@ def update_scholar_profile(request):
         log_if_stale(filename)
         return "Error storing data on Google Bucket", 500
 
-    return f"Updated entry for author {scholar_id or author_name} with filename {filename}", 200
+    return f"Updated entry for author {scholar_id} with filename {filename}", 200
 
-def get_scholar_data(author_name, scholar_id=None):
+
+def get_scholar_data(scholar_id):
     try:
-        # Look up the profile by ID when we have one. Google Scholar's author
-        # search now redirects to a sign-in page, so search by name fails.
-        if scholar_id:
-            author = scholarly.search_author_id(scholar_id)
-        else:
-            author = next(scholarly.search_author(author_name))
+        # Look up the profile by ID only: Google Scholar's author search
+        # redirects to a sign-in page, so searching by name fails.
+        author = scholarly.search_author_id(scholar_id)
         author = scholarly.fill(author)
     except Exception:
         logging.exception("Error getting data from Google Scholar")
@@ -90,25 +88,26 @@ def get_scholar_data(author_name, scholar_id=None):
 
     return author, publications
 
+
 def store_data_on_bucket(filename, author, publications):
     try:
         client = storage.Client()
         bucket = client.bucket(BUCKET_NAME)
 
-        # Save the author profile in a JSON file
-        author_filename = f"{filename}.json"
-        blob = bucket.blob(str(author_filename))
-        blob.upload_from_string(json.dumps(author), content_type="application/json")
-        
-        # Save the publications in a JSON file
-        publications_filename = f"{filename}_pubs.json"
-        blob = bucket.blob(str(publications_filename))
+        # Write the publications first: <filename>.json is written only when
+        # both uploads succeed, so its timestamp (which log_if_stale checks)
+        # never claims an update whose publications list failed to upload.
+        blob = bucket.blob(f"{filename}_pubs.json")
         blob.upload_from_string(json.dumps(publications), content_type="application/json")
+
+        blob = bucket.blob(f"{filename}.json")
+        blob.upload_from_string(json.dumps(author), content_type="application/json")
     except Exception:
         logging.exception("Error storing data on Google Bucket")
         return None
 
     return True
+
 
 def log_if_stale(filename):
     """After a failed run, log STALE_MARKER if <filename>.json is older than STALE_AFTER (or missing)."""
