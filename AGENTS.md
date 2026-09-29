@@ -120,6 +120,8 @@ Roles granted:
 | `roles/iam.serviceAccountUser` | SAs `scholar-update-runtime@…`, `scheduler-invoker@…`, and `374424129382-compute@…` only | Deploy the function as its runtime SA and edit the Scheduler jobs that use the invoker SA |
 | `roles/storage.objectAdmin` | bucket `publications_scholar` only | Read/write the generated JSON files |
 | `roles/artifactregistry.admin` | repo `gcf-artifacts` only | Delete old deploy images and edit the repo's cleanup policy |
+| `roles/monitoring.alertPolicyEditor` | project | Create and edit metric-based alert policies. Log-based ones (`conditionMatchedLog`) also need `logging.notificationRules.*`, which the agent does not have, so the owner creates, disables or deletes those |
+| `roles/monitoring.viewer` | project | Read metrics, alert policies and notification channels |
 
 **Multi-user setup.** Each team member has their own key, encrypted with their
 own passphrase, in `.cloud-credentials.<git-email>.enc`. Passphrases live only
