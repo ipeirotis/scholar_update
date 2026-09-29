@@ -9,6 +9,13 @@ from scholarly import scholarly
 # Output names become object names in the public bucket, so keep them simple
 FILENAME_RE = re.compile(r"[A-Za-z0-9_-]{1,64}")
 
+# scholarly reports why a fetch failed (status code, captcha, 403) only at
+# INFO, and httpx logs each request's status at INFO. Keep both so a
+# MaxTriesExceededException in the logs comes with Google Scholar's response.
+logging.basicConfig(level=logging.WARNING)
+logging.getLogger("scholarly").setLevel(logging.INFO)
+logging.getLogger("httpx").setLevel(logging.INFO)
+
 @functions_framework.http
 def update_scholar_profile(request):
     """HTTP Cloud Function.
