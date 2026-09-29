@@ -12,4 +12,6 @@ credentials_clean.json
 AGENTS.md
 CLAUDE.md
 README.md
+monitoring/
+tests/
 __pycache__/
