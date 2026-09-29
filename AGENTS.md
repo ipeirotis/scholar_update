@@ -31,6 +31,7 @@ Example outputs:
 main.py                          # Cloud Function entry point: update_scholar_profile
 requirements.txt                 # scholarly (pinned), bibtexparser<2, google-cloud-storage, functions-framework
 .gcloudignore                    # Keeps deploy uploads to main.py + requirements.txt
+monitoring/                      # Alert policy definitions (gcloud monitoring policies create --policy-from-file=...)
 .github/workflows/pythonapp.yml  # flake8 lint, then gcloud functions deploy
 .claude/skills/cloud-bootstrap/  # Skill that manages encrypted GCP credentials
 ```
@@ -45,9 +46,9 @@ requirements.txt                 # scholarly (pinned), bibtexparser<2, google-cl
 | GCS bucket (public read) | `publications_scholar` (hard-coded in `store_data_on_bucket`) |
 | Runtime service account | `scholar-update-runtime@scholar-pub-data.iam.gserviceaccount.com`; its only role is `roles/storage.objectAdmin` on the bucket |
 | Invoker | Not public. Only `scheduler-invoker@scholar-pub-data.iam.gserviceaccount.com` has `roles/run.invoker` on the service |
-| Cloud Scheduler jobs (`us-central1`) | `pubs-ipeirotis` at 03:00 (`scholar_id` `PA9La6oAAAAJ`, filename `ipeirotis`) and `pubs-foster` at 04:00 (`-Km63D4AAAAJ`, `provost`), America/New_York. Both call the function with an OIDC token for `scheduler-invoker` and retry once after 10 minutes. They are managed with `gcloud scheduler`, not in this repo. |
+| Cloud Scheduler jobs (`us-central1`) | `pubs-ipeirotis` at 03:00 (`scholar_id` `PA9La6oAAAAJ`, filename `ipeirotis`) and `pubs-foster` at 04:00 (`-Km63D4AAAAJ`, `provost`), America/New_York. Both call the function with an OIDC token for `scheduler-invoker` and retry up to 3 times, 45 minutes apart (Google Scholar intermittently blocks Cloud Run egress IPs; the spacing keeps the two jobs' retries from overlapping). They are managed with `gcloud scheduler`, not in this repo. |
 | Deploy images | Artifact Registry repo `gcf-artifacts` (`us-central1`), written by each deploy. A cleanup policy keeps the 3 newest images per package and deletes untagged images older than 7 days, so only the last few revisions can be rolled back to |
-| Alerting | Cloud Monitoring policy "scholar-update: nightly run failed" emails the owner on any 5xx from the function or any Scheduler job error |
+| Alerting | Two Cloud Monitoring policies email the owner, both defined in `monitoring/`. "scholar-update: no successful run in 7 days" (PromQL on Cloud Run's built-in `request_count`) fires when the function has returned no HTTP 200 for a week. "scholar-update: output file older than 7 days" (log match) fires when a run fails and `log_if_stale` in `main.py` logs `SCHOLAR_UPDATE_STALE` because that job's `<filename>.json` is over 7 days old, which catches one job failing while the other works. Single failed nights are expected and do not alert. A log-based metric can't express this: PromQL alerts on those look back at most ~25h and absence conditions at most 23h30m. Log-based alert policies need `logging.notificationRules.*`, so the owner manages those. The old per-failure policy "scholar-update: nightly run failed" is disabled |
 | CI deploy identity | `github@scholar-pub-data.iam.gserviceaccount.com`, key in the `GCP_SA_KEY` repo secret |
 
 ## Local development
@@ -119,6 +120,8 @@ Roles granted:
 | `roles/iam.serviceAccountUser` | SAs `scholar-update-runtime@…`, `scheduler-invoker@…`, and `374424129382-compute@…` only | Deploy the function as its runtime SA and edit the Scheduler jobs that use the invoker SA |
 | `roles/storage.objectAdmin` | bucket `publications_scholar` only | Read/write the generated JSON files |
 | `roles/artifactregistry.admin` | repo `gcf-artifacts` only | Delete old deploy images and edit the repo's cleanup policy |
+| `roles/monitoring.alertPolicyEditor` | project | Create and edit metric-based alert policies. Log-based ones (`conditionMatchedLog`) also need `logging.notificationRules.*`, which the agent does not have, so the owner creates, disables or deletes those |
+| `roles/monitoring.viewer` | project | Read metrics, alert policies and notification channels |
 
 **Multi-user setup.** Each team member has their own key, encrypted with their
 own passphrase, in `.cloud-credentials.<git-email>.enc`. Passphrases live only

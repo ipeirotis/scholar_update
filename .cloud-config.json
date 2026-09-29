@@ -2,7 +2,7 @@
   "provider": "gcp",
   "project_id": "scholar-pub-data",
   "service_account": "claude-agent@scholar-pub-data.iam.gserviceaccount.com",
-  "roles": ["roles/cloudfunctions.developer", "roles/cloudscheduler.admin", "roles/logging.viewer"],
+  "roles": ["roles/cloudfunctions.developer", "roles/cloudscheduler.admin", "roles/logging.viewer", "roles/monitoring.alertPolicyEditor", "roles/monitoring.viewer"],
   "resource_roles": [
     {"role": "roles/iam.serviceAccountUser", "resource": "projects/scholar-pub-data/serviceAccounts/374424129382-compute@developer.gserviceaccount.com"},
     {"role": "roles/storage.objectAdmin", "resource": "gs://publications_scholar"},
