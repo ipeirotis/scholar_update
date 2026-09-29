@@ -1,0 +1,29 @@
+{
+  "displayName": "scholar-update: output file older than 7 days",
+  "combiner": "OR",
+  "documentation": {
+    "mimeType": "text/markdown",
+    "subject": "scholar-update: ${log.extracted_label.filename}.json is more than 7 days old",
+    "content": "A scholar-update run failed and gs://publications_scholar/${log.extracted_label.filename}.json has not been updated in over 7 days (the function logs SCHOLAR_UPDATE_STALE in that case). One job keeps failing while the function as a whole may still work. Check the function logs for that job; see AGENTS.md in ipeirotis/scholar_update."
+  },
+  "conditions": [
+    {
+      "displayName": "Failed run with output older than 7 days",
+      "conditionMatchedLog": {
+        "filter": "resource.type=\"cloud_run_revision\" AND resource.labels.service_name=\"scholar-update\" AND textPayload:\"SCHOLAR_UPDATE_STALE\"",
+        "labelExtractors": {
+          "filename": "REGEXP_EXTRACT(textPayload, \"SCHOLAR_UPDATE_STALE: ([A-Za-z0-9_-]+)\\\\.json\")"
+        }
+      }
+    }
+  ],
+  "alertStrategy": {
+    "notificationRateLimit": {
+      "period": "86400s"
+    },
+    "autoClose": "604800s"
+  },
+  "notificationChannels": [
+    "projects/scholar-pub-data/notificationChannels/17551047798955579726"
+  ]
+}

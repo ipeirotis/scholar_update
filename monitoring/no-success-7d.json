@@ -1,0 +1,25 @@
+{
+  "displayName": "scholar-update: no successful run in 7 days",
+  "combiner": "OR",
+  "documentation": {
+    "mimeType": "text/markdown",
+    "subject": "scholar-update: no successful run in 7 days",
+    "content": "The scholar-update Cloud Function has not returned HTTP 200 in the last 7 days, so neither Scheduler job (pubs-ipeirotis, pubs-foster) has updated gs://publications_scholar/. Single failed nights are expected (Google Scholar blocks some Cloud Run IPs; each job retries 3 times, 45 minutes apart), so this only fires after a full week. Check the function and Scheduler logs; see AGENTS.md in ipeirotis/scholar_update."
+  },
+  "conditions": [
+    {
+      "displayName": "No HTTP 200 from scholar-update in 7 days",
+      "conditionPrometheusQueryLanguage": {
+        "query": "absent_over_time(run_googleapis_com:request_count{monitored_resource=\"cloud_run_revision\",service_name=\"scholar-update\",response_code=\"200\"}[7d]) or sum(increase(run_googleapis_com:request_count{monitored_resource=\"cloud_run_revision\",service_name=\"scholar-update\",response_code=\"200\"}[7d])) < 1",
+        "duration": "0s",
+        "evaluationInterval": "3600s"
+      }
+    }
+  ],
+  "alertStrategy": {
+    "autoClose": "604800s"
+  },
+  "notificationChannels": [
+    "projects/scholar-pub-data/notificationChannels/17551047798955579726"
+  ]
+}

@@ -2,12 +2,20 @@ import functions_framework
 import json
 import logging
 import re
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from google.cloud import storage
 from scholarly import scholarly
 
 # Output names become object names in the public bucket, so keep them simple
 FILENAME_RE = re.compile(r"[A-Za-z0-9_-]{1,64}")
+
+BUCKET_NAME = "publications_scholar"
+
+# Single failed runs are routine (Google Scholar blocks some Cloud Run IPs), so
+# alerting keys off this: a failed run whose output is older than STALE_AFTER
+# logs STALE_MARKER, and the "stale output" alert policy matches on it.
+STALE_AFTER = timedelta(days=7)
+STALE_MARKER = "SCHOLAR_UPDATE_STALE"
 
 # scholarly reports why a fetch failed (status code, captcha, 403) only at
 # INFO, and httpx logs each request's status at INFO. Keep both so a
@@ -38,10 +46,12 @@ def update_scholar_profile(request):
 
     author, publications = get_scholar_data(author_name, scholar_id)
     if author is None or publications is None:
+        log_if_stale(filename)
         return "Error getting data from Google Scholar", 500
 
     result = store_data_on_bucket(filename, author, publications)
     if result is None:
+        log_if_stale(filename)
         return "Error storing data on Google Bucket", 500
 
     return f"Updated entry for author {scholar_id or author_name} with filename {filename}", 200
@@ -83,8 +93,7 @@ def get_scholar_data(author_name, scholar_id=None):
 def store_data_on_bucket(filename, author, publications):
     try:
         client = storage.Client()
-        bucket_name = "publications_scholar"
-        bucket = client.bucket(bucket_name)
+        bucket = client.bucket(BUCKET_NAME)
 
         # Save the author profile in a JSON file
         author_filename = f"{filename}.json"
@@ -100,3 +109,18 @@ def store_data_on_bucket(filename, author, publications):
         return None
 
     return True
+
+def log_if_stale(filename):
+    """After a failed run, log STALE_MARKER if <filename>.json is older than STALE_AFTER (or missing)."""
+    try:
+        blob = storage.Client().bucket(BUCKET_NAME).get_blob(f"{filename}.json")
+    except Exception:
+        logging.exception("Could not check the age of %s.json", filename)
+        return
+    if blob is None:
+        logging.error("%s: %s.json does not exist in gs://%s", STALE_MARKER, filename, BUCKET_NAME)
+        return
+    age = datetime.now(timezone.utc) - blob.updated
+    if age > STALE_AFTER:
+        logging.error("%s: %s.json was last updated %s (%d days ago)",
+                      STALE_MARKER, filename, blob.updated.isoformat(), age.days)
